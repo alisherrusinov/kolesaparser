@@ -114,34 +114,89 @@ class Parser:
 
     def add_car(self, url):
         self.links.append(url)
-        print(f'{url[:10]}{len(self.links)}.txt')
-        file = open(f'{len(self.links)}.txt', 'w')
-        file.close()
-        self.files[url] = f'{len(self.links)}.txt'
-
-    def parse_cars(self):
-        req = requests.get()
-        if (req.status_code == 404):
-            print('Неверная ссылка')
+        req = requests.get(url)
+        if (req.status_code != 200):
+            print('Ошибка при запросе')
             return False
         parser = BeautifulSoup(req.text, 'lxml')
 
-        list_links = parser.find_all('div', {'class': 'row vw-item list-item a-elem'})
-        result = []
-        for th in list_links:
-            result.extend(th.find_all('span', {'class': 'a-el-info-title'}))
-        result1 = []
-        for th in result:
-            result1.extend(th.find_all('a', {'class': 'list-link ddl_product_link', 'data-list-id': 'main'}))
-        for i in result1:
-            print(i['href'])
+        # ПОЛУЧЕНИЕ БЕЛЫХ БЛОКОВ(БЕЗ ВСЯКИХ БУСТОВ)
+        list_blocks = parser.find_all('div', {'class': 'row vw-item list-item a-elem'})
+        spans = []  # Список штучек с заголовком объявления
+        for th in list_blocks:
+            spans.extend(th.find_all('span', {'class': 'a-el-info-title'}))  # Получение штучек с заголовком объявления
+        result = []  # Список с тегами а(ссылка в html)
+        for th in spans:
+            result.extend(th.find_all('a', {'class': 'list-link ddl_product_link', 'data-list-id': 'main'}))
+        links = []  # Конечный список самих ссылок
+
+        for i in result:
+            link = i['href']
+            links.append(f'https://kolesa.kz{link}')
 
 
 
+        # ПОЛУЧЕНИЕ ГОЛУБЫХ БЛОКОВ(БУСТЫ ЕСТЬ, НО ПРОСМОТРОВ ТОЖЕ НЕМНОГО)
+        list_blocks = parser.find_all('div', {'class': 'row vw-item list-item blue a-elem'})
+        spans = []  # Список штучек с заголовком объявления
+        for th in list_blocks:
+            spans.extend(th.find_all('span', {'class': 'a-el-info-title'}))  # Получение штучек с заголовком объявления
+        result = []  # Список с тегами а(ссылка в html)
+        for th in spans:
+            result.extend(th.find_all('a', {'class': 'list-link ddl_product_link', 'data-list-id': 'main'}))
 
+        for i in result:
+            link = i['href']
+            links.append(f'https://kolesa.kz{link}')
+
+
+        print('вывод',links)
+        self.files[url] = f'{len(self.links)}.json'
+        with open(self.files[url], "w") as write_file:
+            json.dump(links, write_file)
+
+    def parse_cars(self):
+        for url in self.links:
+            with open(self.files[url], "r") as read_file:
+                database = json.load(read_file)
+            read_file.close()
+            req = requests.get(url)
+            if (req.status_code == 404):
+                print('Неверная ссылка')
+                return False
+            parser = BeautifulSoup(req.text, 'lxml')
+
+            list_links = parser.find_all('div', {'class': 'row vw-item list-item a-elem'})
+            spans = []
+            for th in list_links:
+                spans.extend(th.find_all('span', {'class': 'a-el-info-title'}))
+            result = []
+            for th in spans:
+                result.extend(th.find_all('a', {'class': 'list-link ddl_product_link', 'data-list-id': 'main'}))
+            links = []
+            for i in result:
+                link = i['href']
+                links.append(link)
+            for i in links:
+                if(f'https://kolesa.kz{i}' not in database):
+                    print(i)
+                    database.append(f'https://kolesa.kz{i}')
+                    database.reverse()
+                    print(f'https://kolesa.kz/{i}')
+                    with open(self.files[url], "w") as write_file:
+                        json.dump(database, write_file)
+                    write_file.close()
+
+
+#DEBUG
+import time
 a = Parser()
-b = a.make_query(city='алматы', marka='vaz', probeg='old', year_final=2020, price_final=10000000)
-a.add_car('http:azazazaza/')
-a.add_car('http:aaaaaa/')
-print(a.links)
-print(a.files)
+b = a.make_query(marka='bmw', probeg='old', year_final=2020,)
+c = a.make_query(city='алматы', marka='vaz', probeg='old', year_final=2020, price_final=10000000)
+print(c)
+a.add_car(b)
+a.add_car(c)
+a.parse_cars()
+while True:
+    time.sleep(10)
+    a.parse_cars()
