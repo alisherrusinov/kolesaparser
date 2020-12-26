@@ -25,7 +25,7 @@ async def subscribe(message: types.Message):
 @dp.message_handler()
 async def echo_message(msg: types.Message):
     text = msg.text
-    if('/add_car ' in text):
+    if('/add_car' in text):
         arg = text.split()[1:]
         city = None
         marka = None

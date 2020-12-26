@@ -1,8 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 
-req = requests.get('https://kolesa.kz/cars/avtomobili-s-probegom/vaz/')
-print(req)
+
+req = requests.get(
+    'https://kolesa.kz/ms/views/kolesa/live/113740772/',
+)
+print(req.json()['data']['113740772']['nb_views'])
 parser = BeautifulSoup(req.text, 'lxml')
 
 
@@ -12,19 +15,20 @@ parser = BeautifulSoup(req.text, 'lxml')
 # for i in result1:
 #     print(i['href'])
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import time
-options = Options()
-options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-driver = webdriver.Chrome(executable_path='chromedriver.exe', chrome_options=options)
-driver.get('https://kolesa.kz/cars/avtomobili-s-probegom/vaz/')
-
-html = driver.page_source
-parser = BeautifulSoup(html, 'lxml')
-list_blocks = parser.find_all('div', {'class': 'row vw-item list-item blue a-elem'})
-spans = []  # Список штучек с заголовком объявления
-for th in list_blocks:
-    spans.extend(
-        th.find_all('span', {'class': 'nb-views-int'}))  # Получение штучек с заголовком объявления
-print(spans[0])
+# from selenium import webdriver
+# from selenium.webdriver.chrome.options import Options
+# import time
+# options = Options()
+# options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+# driver = webdriver.Chrome(executable_path='chromedriver.exe', chrome_options=options)
+# driver.get('https://kolesa.kz/cars/avtomobili-s-probegom/vaz/')
+#
+# html = driver.page_source
+# parser = BeautifulSoup(html, 'lxml')
+# list_blocks = parser.find_all('div', {'class': 'row vw-item list-item blue a-elem'})
+# spans = []  # Список штучек с заголовком объявления
+# for th in list_blocks:
+#     spans.extend(
+#         th.find_all('span', {'class': 'nb-views-int'}))  # Получение штучек с заголовком объявления
+# print(spans[0])
+# driver.get('google.com')

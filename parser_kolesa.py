@@ -245,7 +245,9 @@ class Kolesa:
 
         for i in result:
             link = i['href']
-            links.append(f'https://kolesa.kz{link}')
+            views = self.get_views(link)
+            if (views < 15):
+                links.append(f'https://kolesa.kz{link}')
 
         # ПОЛУЧЕНИЕ ГОЛУБЫХ БЛОКОВ(БУСТЫ ЕСТЬ, НО ПРОСМОТРОВ ТОЖЕ НЕМНОГО)
         list_blocks = parser.find_all('div', {'class': 'row vw-item list-item blue a-elem'})
@@ -258,7 +260,9 @@ class Kolesa:
 
         for i in result:
             link = i['href']
-            links.append(f'https://kolesa.kz{link}')
+            views = self.get_views(link)
+            if (views < 15):
+                links.append(f'https://kolesa.kz{link}')
 
         print('вывод', links)
         self.files[url] = f'{len(self.links)}.json'
@@ -289,7 +293,9 @@ class Kolesa:
 
             for i in result:
                 link = i['href']
-                links.append(f'https://kolesa.kz{link}')
+                views = self.get_views(link)
+                if (views < 15):
+                    links.append(f'https://kolesa.kz{link}')
 
             # ПОЛУЧЕНИЕ ГОЛУБЫХ БЛОКОВ(БУСТЫ ЕСТЬ, НО ПРОСМОТРОВ ТОЖЕ НЕМНОГО)
             list_blocks = parser.find_all('div', {'class': 'row vw-item list-item blue a-elem'})
@@ -303,7 +309,9 @@ class Kolesa:
 
             for i in result:
                 link = i['href']
-                links.append(f'https://kolesa.kz{link}')
+                views = self.get_views(link)
+                if(views<15):
+                    links.append(f'https://kolesa.kz{link}')
 
             to_bot = []
 
@@ -338,14 +346,20 @@ class Kolesa:
         elif(template == 'Город'):
             print(self.cities.keys())
 
+    def get_views(self, url):
+        id = url.split('/')[-1]
+        req = requests.get(
+            f'https://kolesa.kz/ms/views/kolesa/live/{id}/',
+        )
+        return req.json()['data'][id]['nb_views']
+
 
 # DEBUG
-
 
 def debug_parse():
     import time
     a = Parser()
-    b = a.make_query(marka='bmw', probeg='old', year_final=2020, )
+    b = a.make_query(marka='bmw', probeg='old', year_final=2020)
     c = a.make_query(city='алматы', marka='vaz', probeg='old', year_final=2020, price_final=10000000)
     print(c)
     a.add_car(b)
