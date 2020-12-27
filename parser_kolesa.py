@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import os
-
+import time
 
 # https://kolesa.kz/cars/avtomobili-s-probegom/avtokredit/nissan/almaty/?auto-car-grbody=2&year[from]=2004&year[
 # to]=2020&price[from]=1%20000&price[to]=100%20000%20000
@@ -11,65 +11,65 @@ class Kolesa:
     def __init__(self, bot=None, admin=0):
         self.bot = bot
         self.admin = admin
+        self.min_views = 15
         self.probegs = {
-            'old': 'avtomobili-s-probegom',
-            'new': 'novye-avtomobili'
+            'пробег': 'avtomobili-s-probegom',
+            'новая': 'novye-avtomobili'
         }
         self.kredit = {
-            'kredit': 'avtokredit',
+            'кредит': 'avtokredit',
         }
         self.marks = {
-            'audi': 'audi',
-            'bmw': 'bmw',
-            'cadillac': 'cadillac',
-            'chery': 'chery',
-            'chevrolet': 'chevrolet',
-            'chrysler': 'chrysler',
-            'citroen': 'citroen',
-            'daewoo': 'daewoo',
-            'datsun': 'datsun',
-            'dodge': 'dodge',
-            'faw': 'faw',
-            'fiat': 'fiat',
-            'ford': 'ford',
-            'geely': 'geely',
-            'great-wall': 'great-wall',
-            'honda': 'honda',
-            'hummer': 'hummer',
-            'hyundai': 'hyundai',
-            'isuzu': 'isuzu',
-            'jac': 'jac',
-            'jaguar': 'jaguar',
-            'jeep': 'jeep',
-            'kia': 'kia',
-            'land-rover': 'land-rover',
-            'lexus': 'lexus',
-            'lifan': 'lifan',
-            'lincoln': 'lincoln',
-            'mazda': 'mazda',
-            'mercedes-benz': 'mercedes-benz',
-            'mini': 'mini',
-            'mitsubishi': 'mitsubishi',
-            'nissan': 'nissan',
-            'opel': 'opel',
-            'peugeot': 'peugeot',
-            'ravon': 'ravon',
-            'renault': 'renault',
-            'skoda': 'skoda',
-            'ssang-yong': 'ssang-yong',
-            'subaru': 'subaru',
-            'suzuki': 'suzuki',
-            'toyota': 'toyota',
-            'volkswagen': 'volkswagen',
-            'volvo': 'volvo',
-            'vaz': 'vaz',
-            'gaz': 'gaz',
-            'zaz': 'zaz',
-            'ij': 'ij',
-            'moskvich': 'moskvich',
-            'retro-automobiles': 'retro-automobiles',
-            'uaz': 'uaz',
-            'uaz': 'uaz',
+            'ауди': 'audi',
+            'бмв': 'bmw',
+            'кадиллак': 'cadillac',
+            'чери': 'chery',
+            'шевроле': 'chevrolet',
+            'крайслер': 'chrysler',
+            'ситроен': 'citroen',
+            'деву': 'daewoo',
+            'датсун': 'datsun',
+            'додж': 'dodge',
+            'фав': 'faw',
+            'фиат': 'fiat',
+            'форд': 'ford',
+            'джили': 'geely',
+            'грейтвол': 'great-wall',
+            'хонда': 'honda',
+            'хаммер': 'hummer',
+            'хендаи': 'hyundai',
+            'исузу': 'isuzu',
+            'як': 'jac',
+            'ягуар': 'jaguar',
+            'джип': 'jeep',
+            'киа': 'kia',
+            'лендровер': 'land-rover',
+            'лексус': 'lexus',
+            'лифан': 'lifan',
+            'линкольн': 'lincoln',
+            'мазда': 'mazda',
+            'мерседес': 'mercedes-benz',
+            'мини': 'mini',
+            'митсубиси': 'mitsubishi',
+            'ниссан': 'nissan',
+            'опель': 'opel',
+            'пежо': 'peugeot',
+            'равон': 'ravon',
+            'рено': 'renault',
+            'шкода': 'skoda',
+            'санйонг': 'ssang-yong',
+            'субару': 'subaru',
+            'сузуки': 'suzuki',
+            'тойота': 'toyota',
+            'фольксваген': 'volkswagen',
+            'вольво': 'volvo',
+            'ваз': 'vaz',
+            'газ': 'gaz',
+            'заз': 'zaz',
+            'иж': 'ij',
+            'москвич': 'moskvich',
+            'ретро': 'retro-automobiles',
+            'уаз': 'uaz',
         }
 
         self.cities = {
@@ -78,6 +78,9 @@ class Kolesa:
             'алматы': 'almaty',
             'атырау': 'atyrau',
             'жезказган': 'atyrau',
+            'алматинская_область': 'region-almatinskaya-oblast',
+            'актюбинская_область': 'region-aktubinskaya-oblast',
+            'акмолинская_область': 'region-akmolinskaya-oblast',
         }
 
         self.types = {
@@ -246,7 +249,7 @@ class Kolesa:
         for i in result:
             link = i['href']
             views = self.get_views(link)
-            if (views < 15):
+            if (views < self.min_views):
                 links.append(f'https://kolesa.kz{link}')
 
         # ПОЛУЧЕНИЕ ГОЛУБЫХ БЛОКОВ(БУСТЫ ЕСТЬ, НО ПРОСМОТРОВ ТОЖЕ НЕМНОГО)
@@ -261,7 +264,7 @@ class Kolesa:
         for i in result:
             link = i['href']
             views = self.get_views(link)
-            if (views < 15):
+            if (views < self.min_views):
                 links.append(f'https://kolesa.kz{link}')
 
         print('вывод', links)
@@ -294,7 +297,7 @@ class Kolesa:
             for i in result:
                 link = i['href']
                 views = self.get_views(link)
-                if (views < 15):
+                if (views < self.min_views):
                     links.append(f'https://kolesa.kz{link}')
 
             # ПОЛУЧЕНИЕ ГОЛУБЫХ БЛОКОВ(БУСТЫ ЕСТЬ, НО ПРОСМОТРОВ ТОЖЕ НЕМНОГО)
@@ -310,7 +313,7 @@ class Kolesa:
             for i in result:
                 link = i['href']
                 views = self.get_views(link)
-                if(views<15):
+                if(views<self.min_views):
                     links.append(f'https://kolesa.kz{link}')
 
             to_bot = []
@@ -330,27 +333,31 @@ class Kolesa:
 
     def print_templates(self, template):
         if(template == 'Марка'):
-            print(self.marks.keys())
+            return list(self.marks.keys())
         elif(template == 'Пробег'):
-            print(self.probegs.keys())
+            return self.probegs.keys()
         elif(template == 'Страна'):
-            print(self.countries.keys())
+            return self.countries.keys()
         elif(template == 'Кредит'):
-            print(self.kredit.keys())
+            return self.kredit.keys()
         elif(template == 'Кузов'):
-            print(self.kuzovs.keys())
+            return self.kuzovs.keys()
         elif(template == 'Двигатель'):
-            print(self.engines.keys())
+            return self.engines.keys()
         elif(template == 'КПП'):
-            print(self.transms.keys())
+            return self.transms.keys()
         elif(template == 'Город'):
-            print(self.cities.keys())
+            return self.cities.keys()
+        else:
+            return False
 
     def get_views(self, url):
         id = url.split('/')[-1]
         req = requests.get(
             f'https://kolesa.kz/ms/views/kolesa/live/{id}/',
         )
+        time.sleep(0.2)
+        print(req)
         return req.json()['data'][id]['nb_views']
 
 
